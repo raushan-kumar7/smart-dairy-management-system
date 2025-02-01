@@ -7,7 +7,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
     const token =
       req.cookies?.accessToken ||
-      req.headers("Authorization")?.replace("Bearer ", "");
+      req.headers["Authorization"]?.replace("Bearer ", "");
 
     if (!token) {
       throw new ApiError(401, "Unauthorized access");
@@ -29,3 +29,13 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     throw new ApiError(401, error?.message || "Invalid access token");
   }
 });
+
+export const verifyRole = (...roles) => {
+  return asyncHandler(async (req, _, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      throw new ApiError(403, "Access denied. Unauthorized access");
+    }
+
+    next();
+  });
+};
