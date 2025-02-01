@@ -15,10 +15,11 @@ app.use(cookieParser());
 app.use(ErrorMiddleware);
 
 // Import and use the routes
-//import adminRoutes from "./routes/admin.routes.js"
 import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
 
 // Routes declaration
 app.use("/api/v1/auth", authRouter);
-//app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/users", userRouter);
+
 export { app };

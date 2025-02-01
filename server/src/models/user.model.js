@@ -69,9 +69,6 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String,
-      required: function () {
-        return this.role !== "admin";
-      },
     },
     address: {
       country: {
