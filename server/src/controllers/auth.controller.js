@@ -5,6 +5,42 @@ import { User } from "../models/user.model.js";
 import { generateAccessAndRefreshTokens } from "../utils/GenerateAccessAndRefreshToken.js";
 import crypto from "crypto";
 import { getPasswordResetMailContent, sendMail } from "../utils/SendMail.js";
+import { generateCode } from "../utils/GenerateCode.js";
+
+
+const register = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  const existedAdmin = await User.findOne({ email });
+
+  if (existedAdmin) {
+    throw new ApiError(400, "Admin already exists");
+  }
+
+  const userCode = await generateCode("admin");
+
+  const admin = await User.create({
+    email,
+    password,
+    role: "admin",
+    userCode,
+  });
+
+  const createdAdmin = await User.findById(admin._id).select(
+    "-password -refreshToken"
+  );
+
+  if (!createdAdmin) {
+    throw new ApiError(500, "Admin not created");
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, createdAdmin, "Admin created successfully"));
+});
 
 const login = asyncHandler(async (req, res) => {
   const { email, userCode, password } = req.body;
@@ -156,4 +192,4 @@ const resetPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password reset successful"));
 });
 
-export { login, logout, changePassword, forgotPassword, resetPassword };
+export { register, login, logout, changePassword, forgotPassword, resetPassword };

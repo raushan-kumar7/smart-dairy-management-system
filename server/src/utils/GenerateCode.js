@@ -4,15 +4,25 @@ import { ApiError } from "./ApiError.js";
 const generateCode = async (role) => {
   try {
     const prefix = role.charAt(0).toUpperCase();
-    const lastUser = await User.findOne({ role })
-      .sort({ userCode: -1 })
-      .limit(1);
 
-    const nextCode = lastUser ? lastUser.userCode + 1 : 1;
+    const lastUser = await User.findOne({ 
+      role, 
+      userCode: { $regex: `^${prefix}\\d{3}$` }
+    }).sort({ userCode: -1 }).limit(1);
 
-    return `${prefix}${nextCode.toString().padStart(4, "0")}`;
-  } catch (error) {
-    throw new ApiError(500, "Something went wrong while generating code");
+    let nextNumber = 1;
+
+    if (lastUser) {
+      const lastCode = lastUser.userCode.slice(1);
+
+      if (!isNaN(lastCode)) {
+        nextNumber = parseInt(lastCode, 10) + 1;
+      }
+    }
+
+    return `${prefix}${nextNumber.toString().padStart(3, "0")}`;
+  } catch {
+    throw new ApiError(500, "Error generating user code");
   }
 };
 
