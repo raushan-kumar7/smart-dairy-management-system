@@ -2,13 +2,13 @@ import mongoose, { Schema } from "mongoose";
 
 const mpcSchema = new Schema(
   {
-    bmc: [
+    bmcs: [
       {
         type: Schema.Types.ObjectId,
         ref: "BMC",
       },
     ],
-    mpp: [
+    mpps: [
       {
         type: Schema.Types.ObjectId,
         ref: "MPP",
