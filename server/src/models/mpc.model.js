@@ -17,13 +17,19 @@ const mpcSchema = new Schema(
     farmers: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Farmer",
+        ref: "User",
+      },
+    ],
+    sahayaks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     staffs: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Staff",
+        ref: "User",
       },
     ],
   },
