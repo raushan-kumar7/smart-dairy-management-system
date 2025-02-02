@@ -2,6 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const mppSchema = new Schema(
   {
+    bmcCode: {
+      type: Number,
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -10,16 +14,16 @@ const mppSchema = new Schema(
       country: {
         type: String,
       },
-      villageName: {
-        type: String,
-      },
-      city: {
+      state: {
         type: String,
       },
       districtName: {
         type: String,
       },
-      state: {
+      city: {
+        type: String,
+      },
+      villageName: {
         type: String,
       },
       pincode: {
@@ -31,12 +35,12 @@ const mppSchema = new Schema(
     },
     sahayak: {
       type: Schema.Types.ObjectId,
-      ref: "Staff",
+      ref: "User",
     },
     farmers: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Farmer",
+        ref: "User",
       },
     ],
   },

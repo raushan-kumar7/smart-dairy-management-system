@@ -10,16 +10,16 @@ const bmcSchema = new Schema(
       country: {
         type: String,
       },
-      villageName: {
-        type: String,
-      },
-      city: {
+      state: {
         type: String,
       },
       districtName: {
         type: String,
       },
-      state: {
+      city: {
+        type: String,
+      },
+      villageName: {
         type: String,
       },
       pincode: {
@@ -31,7 +31,7 @@ const bmcSchema = new Schema(
     },
     incharge: {
       type: Schema.Types.ObjectId,
-      ref: "Staff",
+      ref: "User",
     },
     mpps: [
       {
