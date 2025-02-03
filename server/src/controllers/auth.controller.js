@@ -6,8 +6,7 @@ import { generateAccessAndRefreshTokens } from "../utils/GenerateAccessAndRefres
 import crypto from "crypto";
 import { getPasswordResetMailContent, sendMail } from "../utils/SendMail.js";
 import { generateCode } from "../utils/GenerateCode.js";
-import { createAuditLog } from "../utils/AuditLog.js";
-import { getGeoLocation } from "../utils/GeoLocation.js";
+import { logAudit } from "../utils/LogAudit.js";
 
 const register = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -38,21 +37,7 @@ const register = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Admin not created");
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "CREATE",
-    entity: "ADMIN",
-    entityId: createdAdmin._id,
-    performedBy: createdAdmin._id,
-    newData: createdAdmin,
-    reason: "Admin created",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "CREATE", "ADMIN", "Admin created");
 
   return res
     .status(201)
@@ -86,21 +71,7 @@ const login = asyncHandler(async (req, res) => {
     "-password -refreshToken -bankDetails -mpcDetails"
   );
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "LOGIN",
-    entity: "USER",
-    entityId: loggedInUser._id,
-    performedBy: loggedInUser._id,
-    newData: loggedInUser,
-    reason: "User logged in",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "LOGIN", "USER", "User logged in");
 
   const options = { httpOnly: true, secure: true };
 
@@ -126,21 +97,7 @@ const logout = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "LOGOUT",
-    entity: "USER",
-    entityId: req.user._id,
-    performedBy: req.user._id,
-    newData: req.user,
-    reason: "User logged out",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "LOGOUT", "USER", "User logged out");
 
   const options = { httpOnly: true, secure: true };
 
@@ -165,21 +122,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
   await user.save({ validateBeforeSave: false });
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "UPDATE",
-    entity: "USER",
-    entityId: user._id,
-    performedBy: user._id,
-    newData: user,
-    reason: "Password changed",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "UPDATE", "USER", "Password changed");
 
   return res
     .status(200)
@@ -220,21 +163,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     });
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "UPDATE",
-    entity: "USER",
-    entityId: user._id,
-    performedBy: user._id,
-    newData: user,
-    reason: "Password reset link sent",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "UPDATE", "USER", "Password reset link sent");
 
   return res
     .status(200)
@@ -268,21 +197,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "UPDATE",
-    entity: "USER",
-    entityId: user._id,
-    performedBy: user._id,
-    newData: user,
-    reason: "Password reset",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "UPDATE", "USER", "Password reset");
 
   return res
     .status(200)

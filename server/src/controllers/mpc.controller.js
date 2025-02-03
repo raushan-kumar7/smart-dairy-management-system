@@ -2,8 +2,7 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { MPC } from "../models/mpc.model.js";
-import { createAuditLog } from "../utils/AuditLog.js";
-import { getGeoLocation } from "../utils/GeoLocation.js";
+import { logAudit } from "../utils/LogAudit.js"
 
 const getMPCsDetails = asyncHandler(async (req, res) => {
   const mpcDetails = await MPC.find()
@@ -18,19 +17,7 @@ const getMPCsDetails = asyncHandler(async (req, res) => {
     throw new ApiError(404, "MPC details not found");
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "RETRIEVE",
-    entity: "MPC",
-    performedBy: req.user._id,
-    reason: "Retrieved all MPCs",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-    },
-  });
+  await logAudit(req, "RETRIEVE", "MPC", "Retrieved MPC details");
 
   return res
     .status(200)
@@ -66,21 +53,7 @@ const getMPCCounts = asyncHandler(async (req, res) => {
     throw new ApiError(404, "MPC data not found");
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  const createdAuditLog = await createAuditLog({
-    action: "RETRIEVE",
-    entity: "MPC",
-    performedBy: req.user._id,
-    reason: "Retrieved all MPCs",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-    },
-  });
-
-  console.log(createdAuditLog);
+  logAudit(req, "RETRIEVE", "MPC", "Retrieved MPC counts");
 
   return res
     .status(200)

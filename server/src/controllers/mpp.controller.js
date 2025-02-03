@@ -4,8 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { BMC } from "../models/bmc.model.js";
 import { MPP } from "../models/mpp.model.js";
 import { MPC } from "../models/mpc.model.js";
-import { createAuditLog } from "../utils/AuditLog.js";
-import { getGeoLocation } from "../utils/GeoLocation.js";
+import { logAudit } from "../utils/LogAudit.js"
 
 // Generate a unique MPP Code
 const generateMPPCode = async () => {
@@ -44,21 +43,7 @@ const createMPP = asyncHandler(async (req, res) => {
     { upsert: true }
   );
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "CREATE",
-    entity: "MPP",
-    entityId: mpp._id,
-    performedBy: req.user._id,
-    newData: mpp,
-    reason: "MPP created",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "CREATE", "MPP", "MPP created");
 
   return res
     .status(201)
@@ -72,19 +57,7 @@ const getMPPs = asyncHandler(async (req, res) => {
     throw new ApiError(404, "MPPs not found");
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "RETRIEVE",
-    entity: "MPP",
-    performedBy: req.user._id,
-    reason: "Retrieved all MPPs",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "RETRIEVE", "MPP", "Retrieved all MPPs");
 
   return res
     .status(200)
@@ -100,20 +73,7 @@ const getMPP = asyncHandler(async (req, res) => {
     throw new ApiError(404, "MPP not found");
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "RETRIEVE",
-    entity: "MPP",
-    entityId: mpp._id,
-    performedBy: req.user._id,
-    reason: "Retrieved MPP",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "RETRIEVE", "MPP", "Retrieved MPP");
 
   return res
     .status(200)
@@ -137,21 +97,7 @@ const updateMPP = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while updating MPP");
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "UPDATE",
-    entity: "MPP",
-    entityId: updatedMPP._id,
-    performedBy: req.user._id,
-    newData: updatedMPP,
-    reason: "MPP updated",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "UPDATE", "MPP", "MPP updated");
 
   return res
     .status(200)
@@ -189,20 +135,7 @@ const deleteMPP = asyncHandler(async (req, res) => {
     }
   );
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "DELETE",
-    entity: "MPP",
-    entityId: deletedMPP._id,
-    performedBy: req.user._id,
-    reason: "MPP deleted",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "DELETE", "MPP", "MPP deleted");
 
   return res
     .status(200)
