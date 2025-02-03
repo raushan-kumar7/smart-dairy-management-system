@@ -4,8 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { generateCode } from "../utils/GenerateCode.js";
 import { MPC } from "../models/mpc.model.js";
-import { getGeoLocation } from "../utils/GeoLocation.js";
-import { createAuditLog } from "../utils/AuditLog.js";
+import { logAudit } from "../utils/LogAudit.js"
 
 const generateUserCode = async (role) => {
   const code = await generateCode(role);
@@ -98,21 +97,7 @@ const createUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = await getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "CREATE",
-    entity: "USER",
-    entityId: user._id,
-    performedBy: user._id,
-    newData: user,
-    reason: "User created",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "CREATE", "USER", "User created");
 
   return res
     .status(201)
@@ -136,21 +121,7 @@ const updateUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = await getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "UPDATE",
-    entity: "USER",
-    entityId: user._id,
-    performedBy: user._id,
-    newData: user,
-    reason: "User updated",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "UPDATE", "USER", "User updated");
 
   return res
     .status(200)
@@ -159,20 +130,7 @@ const updateUser = asyncHandler(async (req, res) => {
 
 const getCurrentUser = asyncHandler(async (req, res) => {
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = await getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "RETRIEVE",
-    entity: "USER",
-    entityId: req.user._id,
-    performedBy: req.user._id,
-    reason: "Retrieved current user",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "RETRIEVE", "USER", "User retrieved");
 
   return res
     .status(200)
@@ -206,20 +164,7 @@ const deleteUserAccount = asyncHandler(async (req, res) => {
     );
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  const geo = await getGeoLocation(ip);
-
-  await createAuditLog({
-    action: "DELETE",
-    entity: "USER",
-    entityId: user._id,
-    performedBy: user._id,
-    reason: "User deleted",
-    metadata: {
-      ...geo,
-      deviveInfo: req.headers["user-agent"],
-    },
-  });
+  logAudit(req, "DELETE", "USER", "User deleted");
 
   return res
     .status(200)

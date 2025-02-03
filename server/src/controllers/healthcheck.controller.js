@@ -1,13 +1,10 @@
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { createAuditLog } from "../utils/AuditLog.js";
-import { getGeoLocation } from "../utils/GeoLocation.js";
+import { logAudit } from "../utils/LogAudit.js"
 import os from "os";
 import mongoose from "mongoose";
 
 const healthcheck = asyncHandler(async (req, res) => {
-  const ip = req.ip;
-  const geo = await getGeoLocation(ip);
   
   // Gather detailed system information
   const systemInfo = {
@@ -56,22 +53,8 @@ const healthcheck = asyncHandler(async (req, res) => {
       timestamp: Date.now()
     }
   };
-  
-  await createAuditLog({
-    action: "HEALTHCHECK",
-    entity: "SYSTEM",
-    performedBy: req.user?._id || "SYSTEM",
-    reason: "System Health Monitoring",
-    metadata: {
-      ...geo,
-      deviceInfo: req.headers["user-agent"],
-      systemMetrics: {
-        cpuLoad: systemInfo.system.loadAverage[0],
-        memoryUsage: systemInfo.system.memoryUsagePercent,
-        uptime: systemInfo.uptime
-      }
-    }
-  });
+
+  logAudit(req, "HEALTHCHECK", "SYSTEM", "System Health Check");
 
   // Add status checks for critical services
   const healthStatus = 
