@@ -167,6 +167,28 @@ const deleteMPP = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while deleting MPP");
   }
 
+  await BMC.findOneAndUpdate(
+    {
+      mpps: deletedMPP._id,
+    },
+    {
+      $pull: {
+        mpps: deletedMPP._id,
+      },
+    }
+  );
+
+  await MPC.findOneAndUpdate(
+    {
+      mpps: deletedMPP._id,
+    },
+    {
+      $pull: {
+        mpps: deletedMPP._id,
+      },
+    }
+  );
+
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
   const geo = getGeoLocation(ip);
 
